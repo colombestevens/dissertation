@@ -9,12 +9,12 @@
 library(tidyverse)
 
 # Importing data
-data <- read.csv("MZB_raw_T_data.csv")
+MZB_raw <- read.csv("MZB_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
 
 # Separating date/time, creating month
-MZB <- data %>% 
+MZB <- MZB_raw %>% 
   separate(Date.Time_UTC, c("Date", "Time"), sep = " ", remove = TRUE) %>%
   select(-Time) %>% 
   mutate(Month = case_when(
