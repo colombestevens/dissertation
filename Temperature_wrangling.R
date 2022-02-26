@@ -13,6 +13,7 @@ MZB_raw <- read.csv("MZB_raw_T_data.csv")
 Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
 Casey_raw <- read.csv("Casey_raw_T_data.csv")
 KGI_raw <- read.csv("KGI_raw_T_data.csv")
+Rothera_raw <- read.csv("Rothera_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
 
@@ -88,5 +89,12 @@ Casey <- Casey_raw %>%
 KGI <- KGI_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(KGI_raw) %>% 
+  group_by(Site, Year) %>% 
+  summarise(Mean_temp = mean(Temp))
+
+# ROTHERA ----
+Rothera <- Rothera_raw %>%
+  pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
+  na.omit(Rothera_raw) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
