@@ -5,14 +5,17 @@
 # Aim of script:
 # Wrangling temperature data to get monthly averages of each year
 
-# Library
+# Library ----
 library(tidyverse)
 
-# Importing data
+# Importing data ----
 MZB_raw <- read.csv("MZB_raw_T_data.csv")
+Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
+Casey_raw <- read.csv("Casey_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
 
+# MZB ----
 # Separating date/time, creating month
 MZB <- MZB_raw %>% 
   separate(Date.Time_UTC, c("Date", "Time"), sep = " ", remove = TRUE) %>%
@@ -62,3 +65,18 @@ MZB_mean <- MZB %>%
   group_by(Site, Month, Year) %>% 
   summarise(Mean_temp = mean(Temp)) %>% 
   ungroup()
+
+# LIVINGSTON ISLAND ----
+
+Liv <- Liv_raw %>% 
+  separate(X..., c("Factor", "Output"), sep = " : ", remove = TRUE) 
+Liv <-  mutate_all(str_remove_all(Liv, '""'))
+
+# CASEY ----
+Casey <- Casey_raw %>%
+  pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
+  na.omit(Casey_raw) %>% 
+  group_by(Year) %>% 
+  summarise(Mean_temp = mean(Temp))
+
+
