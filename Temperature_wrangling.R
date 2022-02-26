@@ -3,7 +3,7 @@
 # 17/02/2022
 
 # Aim of script:
-# Wrangling temperature data to get monthly averages of each year
+# Wrangling temperature data to get (monthly) averages of each year
 
 # Library ----
 library(tidyverse)
@@ -12,12 +12,13 @@ library(tidyverse)
 MZB_raw <- read.csv("MZB_raw_T_data.csv")
 Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
 Casey_raw <- read.csv("Casey_raw_T_data.csv")
+KGI_raw <- read.csv("KGI_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
 
 # MZB ----
 # Separating date/time, creating month
-MZB <- MZB_raw %>% 
+MZB_wrangled <- MZB_raw %>% 
   separate(Date.Time_UTC, c("Date", "Time"), sep = " ", remove = TRUE) %>%
   select(-Time) %>% 
   mutate(Month = case_when(
@@ -34,11 +35,11 @@ MZB <- MZB_raw %>%
     grepl("11/", Date) ~ "November",
     grepl("12/", Date) ~ "December"))
 
-MZB$Temp <- as.numeric(MZB$Temp)
+MZB_wrangled$Temp <- as.numeric(MZB_wrangled$Temp)
 
 # Calculating monthly averages 2000-2020
-MZB_mean <- MZB %>%
-  na.omit(MZB) %>% 
+MZB_mean <- MZB_wrangled %>%
+  na.omit(MZB_wrangled) %>% 
   mutate(Year = case_when(
     grepl("2000", Date) ~ "2000",
     grepl("2001", Date) ~ "2001",
@@ -63,8 +64,12 @@ MZB_mean <- MZB %>%
     grepl("2020", Date) ~ "2020")) %>%
   select(-Date) %>% 
   group_by(Site, Month, Year) %>% 
-  summarise(Mean_temp = mean(Temp)) %>% 
+  summarise(Monthly_mean = mean(Temp)) %>% 
   ungroup()
+
+MZB <- MZB_mean %>% 
+  group_by(Site, Year) %>% 
+  summarise(Mean_temp = mean(Monthly_mean))
 
 # LIVINGSTON ISLAND ----
 
@@ -76,7 +81,12 @@ Liv <-  mutate_all(str_remove_all(Liv, '""'))
 Casey <- Casey_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(Casey_raw) %>% 
-  group_by(Year) %>% 
+  group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
 
-
+# KING GEORGE ISLAND ----
+KGI <- KGI_raw %>%
+  pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
+  na.omit(KGI_raw) %>% 
+  group_by(Site, Year) %>% 
+  summarise(Mean_temp = mean(Temp))
