@@ -14,6 +14,8 @@ Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
 Casey_raw <- read.csv("Casey_raw_T_data.csv")
 KGI_raw <- read.csv("KGI_raw_T_data.csv")
 Rothera_raw <- read.csv("Rothera_raw_T_data.csv")
+CH_04_raw <- read.csv("CH_04_raw.csv")
+CH_11_18_raw <- read.csv("CH_11_18_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
 
@@ -23,18 +25,18 @@ MZB_wrangled <- MZB_raw %>%
   separate(Date.Time_UTC, c("Date", "Time"), sep = " ", remove = TRUE) %>%
   select(-Time) %>% 
   mutate(Month = case_when(
-    grepl("01/", Date) ~ "January",
-    grepl("02/", Date) ~ "February",
-    grepl("03/", Date) ~ "March",
-    grepl("04/", Date) ~ "April",
-    grepl("05/", Date) ~ "May",
-    grepl("06/", Date) ~ "June",
-    grepl("07/", Date) ~ "July",
-    grepl("08/", Date) ~ "August",
-    grepl("09/", Date) ~ "September",
-    grepl("10/", Date) ~ "October",
-    grepl("11/", Date) ~ "November",
-    grepl("12/", Date) ~ "December"))
+    grepl("/01/", Date) ~ "January",
+    grepl("/02/", Date) ~ "February",
+    grepl("/03/", Date) ~ "March",
+    grepl("/04/", Date) ~ "April",
+    grepl("/05/", Date) ~ "May",
+    grepl("/06/", Date) ~ "June",
+    grepl("/07/", Date) ~ "July",
+    grepl("/08/", Date) ~ "August",
+    grepl("/09/", Date) ~ "September",
+    grepl("/10/", Date) ~ "October",
+    grepl("/11/", Date) ~ "November",
+    grepl("/12/", Date) ~ "December"))
 
 MZB_wrangled$Temp <- as.numeric(MZB_wrangled$Temp)
 
@@ -96,5 +98,28 @@ KGI <- KGI_raw %>%
 Rothera <- Rothera_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(Rothera_raw) %>% 
+  group_by(Site, Year) %>% 
+  summarise(Mean_temp = mean(Temp))
+
+# CAPE HALLETT ----
+CH_04 <- CH_04_raw %>% 
+  separate(X2004.0000, c("Date", "Time"), sep= " ", remove = TRUE) %>% 
+  select(-Time) %>% 
+  mutate(Month = case_when(
+    grepl("01/", Date) ~ "January",
+    grepl("02/", Date) ~ "February",
+    grepl("03/", Date) ~ "March",
+    grepl("04/", Date) ~ "April",
+    grepl("05/", Date) ~ "May",
+    grepl("06/", Date) ~ "June",
+    grepl("07/", Date) ~ "July",
+    grepl("08/", Date) ~ "August",
+    grepl("09/", Date) ~ "September",
+    grepl("10/", Date) ~ "October",
+    grepl("11/", Date) ~ "November",
+    grepl("12/", Date) ~ "December"))
+
+CH_11_18 <- CH_11_18_raw %>%
+  na.omit(CH_11_18_raw) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
