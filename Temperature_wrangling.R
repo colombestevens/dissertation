@@ -14,7 +14,7 @@ Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
 Casey_raw <- read.csv("Casey_raw_T_data.csv")
 KGI_raw <- read.csv("KGI_raw_T_data.csv")
 Rothera_raw <- read.csv("Rothera_raw_T_data.csv")
-CH_04_raw <- read.csv("CH_04_raw.csv")
+CH_04_10_raw <- read.csv("CH_04_10_raw_T_data.csv")
 CH_11_18_raw <- read.csv("CH_11_18_raw_T_data.csv")
 
 ###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
@@ -102,22 +102,19 @@ Rothera <- Rothera_raw %>%
   summarise(Mean_temp = mean(Temp))
 
 # CAPE HALLETT ----
-CH_04 <- CH_04_raw %>% 
-  separate(X2004.0000, c("Date", "Time"), sep= " ", remove = TRUE) %>% 
-  select(-Time) %>% 
-  mutate(Month = case_when(
-    grepl("01/", Date) ~ "January",
-    grepl("02/", Date) ~ "February",
-    grepl("03/", Date) ~ "March",
-    grepl("04/", Date) ~ "April",
-    grepl("05/", Date) ~ "May",
-    grepl("06/", Date) ~ "June",
-    grepl("07/", Date) ~ "July",
-    grepl("08/", Date) ~ "August",
-    grepl("09/", Date) ~ "September",
-    grepl("10/", Date) ~ "October",
-    grepl("11/", Date) ~ "November",
-    grepl("12/", Date) ~ "December"))
+CH_04_10 <- CH_04_10_raw %>%
+  na.omit(CH_04_10_raw) %>% 
+  separate(date_time, c("Date", "Time"), sep = " ", remove = TRUE) %>% 
+  mutate(Year = case_when(
+    grepl("2004", Date) ~ "2004",
+    grepl("2005", Date) ~ "2005",
+    grepl("2006", Date) ~ "2006",
+    grepl("2007", Date) ~ "2007",
+    grepl("2008", Date) ~ "2008",
+    grepl("2009", Date) ~ "2009",
+    grepl("2010", Date) ~ "2010")) %>%
+  group_by(Year) %>% 
+  summarise(Mean_temp = mean(temp))
 
 CH_11_18 <- CH_11_18_raw %>%
   na.omit(CH_11_18_raw) %>% 
