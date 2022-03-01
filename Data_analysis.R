@@ -8,9 +8,12 @@
 library(tidyverse)
 library(ggplot2)
 
+# CHANGE DATA SET IN FIRST SECTIONS 
+
 # Importing data ----
 Mean_temps <- read.csv("Mean_temperatures.csv")
 Vegetation <- read.csv("Vegetation_cover.csv")
+data <- read.csv("Tidy_data.csv")
 
 # TEMPERATURE CHANGE OVER TIME ----
 
@@ -43,6 +46,13 @@ Vegetation <- read.csv("Vegetation_cover.csv")
    theme_bw() +
    theme(panel.grid = (element_blank())))
 
+# VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
+(veg_temp <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover)) +
+   geom_point() +
+   geom_smooth(method = "lm") +
+   facet_wrap(~Site, scales = "free") +
+   theme_bw() +
+   theme(panel.grid = element_blank()))
 
 
 
