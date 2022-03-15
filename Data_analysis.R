@@ -8,12 +8,19 @@
 library(tidyverse)
 library(ggplot2)
 library(lme4)
+library(stargazer)
+library(MuMIn)
 
 # Importing data ----
 data <- read.csv("Tidy_data.csv")
 
 # Transforming data ----
 # logging data
+data <- na.omit(data)
+data$Region <- as.factor(as.character(data$Region))
+data_west <- filter(data, Region == "West")
+data_east <- filter(data, Region == "East")
+
 data <- mutate(data, Cover_log = log(Percentage_cover))
 hist(data$Cover_log)
 (log_hist <- ggplot(data = data, aes(x = Cover_log)) +
@@ -28,8 +35,15 @@ hist(data$Cover_log2)
 data <- mutate(data, Cover_sqrt = sqrt(Percentage_cover))
 hist(data$Cover_sqrt)
 
+# averaging T data
+t_mean <- data %>% 
+   na.omit() %>% 
+   group_by(Region, Year) %>% 
+   summarise(Mean_temp = mean(Mean_temp))
+
 # TEMPERATURE CHANGE OVER TIME ----
 
+# All T data ----
 # Checking T data distribution
 #(temp_hist <- ggplot(Mean_temps, aes(x = Mean_temp)) +
 # geom_histogram() +
@@ -55,8 +69,39 @@ hist(data$Cover_sqrt)
 temp_time <- lm(Mean_temp ~ Year + Region, data = data)
 summary(temp_time) # significant (overall p + West), Adj-R2 = 0.547
 
-# RQ1: HOW DOES VEGETATION COVER DIFFER BETWEEN THE 2 REGIONS? ----
+# per region
+# west
+hist(data_west$Mean_temp)
+(temp_W_scatter <- ggplot(data_west, aes(x = Year, y = Mean_temp)) +
+   geom_point() +
+   geom_smooth(method = "lm"))
+west_temp <- lm(Mean_temp ~ Year, data = data_west)
+summary(west_temp)
 
+# east
+hist(data_east$Mean_temp)
+(temp_E_scatter <- ggplot(data_east, aes(x = Year, y = Mean_temp)) +
+      geom_point() +
+      geom_smooth(method = "lm"))
+east_temp <- lm(Mean_temp ~ Year, data = data_east)
+summary(east_temp)
+
+# Mean T data ----
+# Plotting data
+(t_mean_scatter <- ggplot(t_mean, aes(x = Year, y = Mean_temp)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    facet_wrap(~Region, scales = "free_y") +
+    theme_bw() +
+    theme(panel.grid = element_blank()))
+
+# model
+Mean_t_ancova <- lm(Mean_temp ~ Year + Region, data = t_mean)
+summary(Mean_t_ancova) # significant (overall + West), adj-R2 = 0.7707
+
+
+# RQ1: HOW DOES VEGETATION COVER DIFFER BETWEEN THE 2 REGIONS? ----
+# could average out present vegetaion cover in each region do box plot??
 
 
 
@@ -75,13 +120,48 @@ veg_resids <- resid(veg_time)
 hist(veg_resids)
 shapiro.test(veg_resids) # not normally distributed
 
-# linear mixed model
-veg_mixed <- lmer(Percentage_cover ~ Year + Region + (1|Site), data = data)
-summary(veg_mixed)
+# LINEAR MIXED MODEL
+veg_mixed_interaction <- lmer(Cover_log2 ~ Year*Region + (1|Site), data = data, REML = FALSE)
+summary(veg_mixed_interaction) # Site explains ~54% of leftover variance after the variance explained by fixed effect
 
-plot(veg_mixed)
-qqnorm(resid(veg_mixed))
-qqline(resid(veg_mixed))
+veg_mixed_null <- lmer(Cover_log2 ~ 1 + (1|Site), data = data, REML = FALSE)
+veg_mixed <- lmer(Cover_log2 ~ Year + Region + (1|Site), data = data, REML = FALSE)
+veg_mixed_simple <- lm(Cover_log2 ~ Year*Region, data = data, REML = FALSE)
+veg_mixed_crossed <- lmer(Cover_log2 ~ Year*Region + (1|Region/Site), data = data, REML = FALSE)
+veg_mixed_random <- lmer(Cover_log2 ~ Year*Region + (Region|Site), data = data, REML = FALSE)
+
+AIC(veg_mixed, veg_mixed_interaction, veg_mixed_null, veg_mixed_simple, veg_mixed_crossed, veg_mixed_random)
+AICc(veg_mixed, veg_mixed_interaction, veg_mixed_null, veg_mixed_simple, veg_mixed_crossed, veg_mixed_random)
+# should use intercation as there's barely any difference between null and no interaction
+# AIC of random slope model is way higher than all the others when using interaction
+# HOWEVER, AIC of random slope is the lowest when only using Region
+# AIC and AICc of intercation & random effect is lower than of interaction w/o random effect and of interaction w/ nested
+
+r.squaredGLMM(veg_mixed_interaction) # R2m = 0.306; R2c = 0.685, i.e. including random effect increases explanatory power
+r.squaredGLMM(veg_mixed_null)
+
+par(mfrow=c(1,2))
+plot(data$Cover_log2,fitted(veg_mixed_simple))
+abline(0,1)
+plot(data$Cover_log2,fitted(veg_mixed_interaction))
+abline(0,1)
+
+stargazer(veg_mixed_interaction, type = "text",
+          digits = 3,
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          digit.separator = "")
+
+# checking assumptions
+plot(veg_mixed_interaction) # resid vs fitted
+
+qqnorm(resid(veg_mixed_interaction))
+qqline(resid(veg_mixed_interaction)) # really good normal Q-Q plot
+
+plot(veg_mixed_interaction,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1) # scale-location not so good
+
+plot(veg_mixed_interaction, rstudent(.) ~ hatvalues(.)) # resids vs leverage
 
 # log linear model
 veg_log <- lm(Cover_log ~ Year, data = data)
@@ -107,7 +187,7 @@ summary(veg_ancova_log) # significant, adj-R2 = 0.119
 veg_ancova_log_interaction <- lm(Cover_log2 ~ Year*Region, data = data)
 summary(veg_ancova_log_interaction) # highly significant, adj-R2 = 0.453
 veg_interaction_resids <- resid(veg_ancova_log_interaction)
-shapiro.test(veg_interaction_resids) # NORMALLY DISTRIBUTED BABY
+shapiro.test(veg_interaction_resids) # not.... NORMALLY DISTRIBUTED BABY
 bartlett.test(Cover_log2 ~ Year*Region, data = data)
 plot(veg_ancova_log_interaction)
 
@@ -171,7 +251,9 @@ veg_temp_log_interaction <- lm(Cover_log2 ~ Mean_temp*Region, data = data)
 summary(veg_temp_log_interaction) # significant, adj-R2 = 0.138
 veg_temp_interaction_resids <- resid(veg_temp_log_interaction)
 shapiro.test(veg_temp_interaction_resids) # NORMALLY DISTRIBUTED
-bartlett.test(Cover_log2 ~ Mean_temp * Region, data = data)
+bartlett.test(Cover_log2 ~ Mean_temp*Region, data = data)
+par(mfrow=c(1,1))
+plot(veg_temp_log_interaction)
 
 # log-ancova: temp and site
 # without interaction
@@ -192,6 +274,14 @@ summary(veg_temp_sqrt) # not significant overall (but signi for E), adj-R2 = 0.0
 # with interaction
 veg_temp_sqrt_interaction <- lm(Cover_sqrt ~ Mean_temp*Region, data = data)
 summary(veg_temp_sqrt_interaction) # significant, adj-R2 = 0.119
+
+# LINEAR MIXED MODEL
+veg_temp_mixed_interaction <- lmer(Cover_log2 ~ Mean_temp*Region + (1|Site), data = data, REML = FALSE)
+summary(veg_temp_mixed_interaction) # Site explains ~54% of leftover variance after the variance explained by fixed effect
+
+veg_temp_mixed <- lmer(Cover_log2 ~ Mean_temp + Region + (1|Site), data = data, REML = FALSE)
+summary(veg_temp_mixed)
+
 
 # Plotting data ----
 (veg_temp <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover)) +
