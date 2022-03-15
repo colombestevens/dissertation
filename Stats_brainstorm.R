@@ -1,4 +1,4 @@
-# Data analysis
+# Stats brainstorm
 # Colombe Stevens
 # 01.03.2022
 
@@ -12,7 +12,7 @@ library(stargazer)
 library(MuMIn)
 
 # Importing data ----
-data <- read.csv("Tidy_data.csv")
+data <- read.csv("Tidy_summer_data.csv")
 
 # Transforming data ----
 # logging data
