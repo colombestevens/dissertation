@@ -66,6 +66,7 @@ MZB_mean <- MZB_wrangled %>%
     grepl("2019", Date) ~ "2019",
     grepl("2020", Date) ~ "2020")) %>%
   select(-Date) %>% 
+  filter(Month == c("November", "December")) %>% 
   group_by(Site, Month, Year) %>% 
   summarise(Monthly_mean = mean(Temp)) %>% 
   ungroup()
@@ -84,13 +85,16 @@ Liv <-  mutate_all(str_remove_all(Liv, '""'))
 Casey <- Casey_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(Casey_raw) %>% 
+  filter(Month %in% c("November", "December")) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
+
 
 # KING GEORGE ISLAND ----
 KGI <- KGI_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(KGI_raw) %>% 
+  filter(Month == c("November", "December")) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
 
@@ -98,6 +102,7 @@ KGI <- KGI_raw %>%
 Rothera <- Rothera_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
   na.omit(Rothera_raw) %>% 
+  filter(Month %in% c("November", "December")) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
 
@@ -112,11 +117,25 @@ CH_04_10 <- CH_04_10_raw %>%
     grepl("2007", Date) ~ "2007",
     grepl("2008", Date) ~ "2008",
     grepl("2009", Date) ~ "2009",
-    grepl("2010", Date) ~ "2010")) %>%
+    grepl("2010", Date) ~ "2010"),
+    Month = case_when(
+    grepl("/01/", Date) ~ "January",
+    grepl("/02/", Date) ~ "February",
+    grepl("/03/", Date) ~ "March",
+    grepl("/04/", Date) ~ "April",
+    grepl("/05/", Date) ~ "May",
+    grepl("/06/", Date) ~ "June",
+    grepl("/07/", Date) ~ "July",
+    grepl("/08/", Date) ~ "August",
+    grepl("/09/", Date) ~ "September",
+    grepl("/10/", Date) ~ "October",
+    grepl("/11/", Date) ~ "November",
+    grepl("/12/", Date) ~ "December")) %>% 
   group_by(Year) %>% 
   summarise(Mean_temp = mean(temp))
 
 CH_11_18 <- CH_11_18_raw %>%
-  na.omit(CH_11_18_raw) %>% 
+  na.omit(CH_11_18_raw) %>%
+  filter(month == c("11", "12")) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
