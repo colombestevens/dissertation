@@ -415,6 +415,171 @@ AICc(veg_temp_glm_proport_simple, veg_temp_glm_proport_interaction, veg_temp_glm
    theme_bw() +
    theme(panel.grid = element_blank()))
 
+### ***ANALYSIS WITH REDUCED DATA*** ----
+
+# Reducing dataframe
+
+reduced_data <- filter(data, Percentage_cover != 0.00)
+
+## TEMPERATURE OVER TIME - ALL DATA
+
+all_data <- read.csv("Tidy_summer_data.csv")
+all_data <- all_data %>% 
+   select(-Percentage_cover) %>% 
+   na.omit()
+
+temp_time_all <- lm(Mean_temp ~ Year + Region, data = all_data)
+summary(temp_time_all)
+
+(temp_scatter2 <- ggplot(all_data, aes(x = Year, y = Mean_temp, colour = Region)) +
+      geom_point() +
+      geom_smooth(method = "lm") +
+      #facet_wrap(~Region, scales = "free_y") +
+      theme_bw() +
+      theme(panel.grid = element_blank()))
+
+## RQ1: VEGETATION COVER CHANGE OVER TIME ----
+
+# Checking distribution of data
+hist(reduced_data$Percentage_cover)
+hist(reduced_data$Cover_log2)
+(veg_hist2 <- ggplot(reduced_data, aes(x = Cover_log2)) +
+      geom_histogram(binwidth = 0.5) )
+
+# Linear mixed model:
+veg_reduced_simple <- lm(Percentage_cover ~ Year + Region, data = reduced_data)
+summary(veg_reduced_simple)
+veg_reduced_s <- lmer(Percentage_cover ~ Year + Region + (1|Site), data = reduced_data)
+summary(veg_reduced_s)
+veg_reduced_s_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Site), data = reduced_data)
+summary(veg_reduced_s_interaction)
+veg_reduced_s_nested <- lmer(Percentage_cover ~ Year + Region + (1|Region/Site), data = reduced_data)
+veg_reduced_t <- lmer(Percentage_cover ~ Year + Region + (1|Year), data = reduced_data)
+veg_reduced_t_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Year), data = reduced_data)
+summary(veg_reduced_t_interaction)
+veg_reduced_s_t <- lmer(Percentage_cover ~ Year + Region + (1|Year) + (1|Site), data = reduced_data)
+veg_reduced_s_t_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Year) + (1|Site), data = reduced_data)
+veg_reduced_interaction <- lm(Percentage_cover ~ Year * Region, data = reduced_data)
+veg_reduced_null <- lm(Percentage_cover ~ 1, data = reduced_data)
+
+AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null)
+
+r.squaredGLMM(veg_reduced_s_interaction)
+r.squaredGLMM(veg_reduced_t_interaction)
+
+# checking assumptions: Site as random effect
+veg_reduced_s_interaction_resid <- resid(veg_reduced_s_interaction)
+shapiro.test(veg_reduced_s_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_reduced_s_interaction_resid)
+qqline(veg_reduced_s_interaction_resid)
+plot(veg_reduced_s_interaction)
+
+# checking assumptions: Year as random effect
+veg_reduced_t_interaction_resid <- resid(veg_reduced_t_interaction)
+shapiro.test(veg_reduced_t_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_reduced_t_interaction_resid)
+qqline(veg_reduced_t_interaction_resid)
+plot(veg_reduced_t_interaction)
+
+# checking assumptions: Site + Year as random effects
+veg_reduced_s_t_interaction_resid <- resid(veg_reduced_s_t_interaction)
+shapiro.test(veg_reduced_s_t_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_reduced_s_t_interaction_resid)
+qqline(veg_reduced_s_t_interaction_resid)
+plot(veg_reduced_s_t_interaction)
+
+# Linear mixed model: log data
+veg_reduced_simple_log <- lm(Cover_log2 ~ Year + Region, data = reduced_data)
+summary(veg_reduced_simple_log)
+veg_reduced_s_log <- lmer(Cover_log2 ~ Year + Region + (1|Site), data = reduced_data)
+summary(veg_reduced_s_log)
+veg_reduced_t_log <- lmer(Cover_log2 ~ Year + Region + (1|Year), data = reduced_data)
+veg_reduced_s_t_log <- lmer(Cover_log2 ~ Year + Region + (1|Year) + (1|Site), data = reduced_data)
+veg_reduced_interaction_log <- lm(Cover_log2 ~ Year * Region, data = reduced_data)
+veg_reduced_null_log <- lm(Cover_log2 ~ 1, data = reduced_data)
+
+AICc(veg_reduced_simple_log, veg_reduced_s_log, veg_reduced_t_log, veg_reduced_s_t_log, veg_reduced_interaction_log, veg_reduced_null_log)
+
+# checking assumptions
+summary(veg_reduced_simple_log)
+plot(veg_reduced_simple_log)
+veg_reduced_simple_resid <- resid(veg_reduced_simple_log)
+shapiro.test(veg_reduced_simple_resid) # normally distributed
+bartlett.test(Cover_log2 ~ Year + Region, data = reduced_data) # doesn't work...
+# do I just use AICcs to compare including a random effect? and if not then i just do an ancova and that's all?
+
+## RQ2: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
+
+# LINEAR MIXED MODEL: non-transformed data
+veg_temp_reduced_simple <- lm(Percentage_cover ~ Mean_temp + Region, data = reduced_data)
+summary(veg_temp_reduced_simple)
+veg_temp_reduced_s <- lmer(Percentage_cover ~ Mean_temp + Region + (1|Site), data = reduced_data)
+summary(veg_temp_reduced_s)
+veg_temp_reduced_s_nested <- lmer(Percentage_cover ~ Mean_temp + Region + (1|Region/Site), data = reduced_data)
+veg_temp_reduced_s_interaction <- lmer(Percentage_cover ~ Mean_temp * Region + (1|Site), data = reduced_data)
+summary(veg_temp_reduced_s_interaction)
+veg_temp_reduced_t <- lmer(Percentage_cover ~ Mean_temp + Region + (1|Year), data = reduced_data)
+summary(veg_temp_reduced_t)
+veg_temp_reduced_t_interaction <- lmer(Percentage_cover ~ Mean_temp * Region + (1|Year), data = reduced_data)
+summary(veg_temp_reduced_t_interaction)
+veg_temp_reduced_s_t <- lmer(Percentage_cover ~ Mean_temp + Region + (1|Site) + (1|Year), data = reduced_data)
+veg_temp_reduced_s_t_interaction <- lmer(Percentage_cover ~ Mean_temp * Region + (1|Site) + (1|Year), data = reduced_data)
+summary(veg_temp_reduced_s_t_interaction)
+veg_temp_reduced_interaction <- lm(Percentage_cover ~ Mean_temp * Region, data = reduced_data)
+veg_temp_reduced_null_lm <- lm(Percentage_cover ~ 1, data = reduced_data)
+veg_temp_reduced_null_lmer <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduced_data)
+
+AIC(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
+AICc(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
+
+r.squaredGLMM(veg_temp_reduced_s_interaction)
+r.squaredGLMM(veg_temp_reduced_t_interaction)
+r.squaredGLMM(veg_temp_reduced_s_t_interaction)
+
+# checking assumptions: Site as random effect
+veg_temp_reduced_s_interaction_resid <- resid(veg_temp_reduced_s_interaction)
+shapiro.test(veg_temp_reduced_s_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_temp_reduced_s_interaction_resid)
+qqline(veg_temp_reduced_s_interaction_resid)
+plot(veg_temp_reduced_s_interaction)
+
+# checking assumptions: Year as random effect
+veg_temp_reduced_t_interaction_resid <- resid(veg_temp_reduced_t_interaction)
+shapiro.test(veg_temp_reduced_t_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_temp_reduced_t_interaction_resid)
+qqline(veg_temp_reduced_t_interaction_resid)
+plot(veg_temp_reduced_t_interaction)
+
+# checking assumptions: Site + Year as random effects
+veg_temp_reduced_s_t_interaction_resid <- resid(veg_temp_reduced_s_t_interaction)
+shapiro.test(veg_temp_reduced_s_t_interaction_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_temp_reduced_s_t_interaction_resid)
+qqline(veg_temp_reduced_s_t_interaction_resid)
+plot(veg_temp_reduced_s_t_interaction)
+
+# LINEAR MIXED MODEL: log data
+veg_temp_reduced_simple_log <- lm(Cover_log2 ~ Mean_temp + Region, data = reduced_data)
+summary(veg_temp_reduced_simple_log)
+veg_temp_reduced_s_log <- lmer(Cover_log2 ~ Mean_temp + Region + (1|Site), data = reduced_data)
+summary(veg_temp_reduced_s_log)
+veg_temp_reduced_s_log_nested <- lmer(Cover_log2 ~ Mean_temp + Region + (1|Region/Site), data = reduced_data)
+veg_temp_reduced_t_log <- lmer(Cover_log2 ~ Mean_temp + Region + (1|Year), data = reduced_data)
+veg_temp_reduced_s_t_log <- lmer(Cover_log2 ~ Mean_temp + Region + (1|Site) + (1|Year), data = reduced_data)
+veg_temp_reduced_interaction_log <- lm(Cover_log2 ~ Mean_temp * Region, data = reduced_data)
+veg_temp_reduced_null_log <- lm(Cover_log2 ~ 1, data = reduced_data)
+
+AIC(veg_temp_reduced_simple_log, veg_temp_reduced_s_log, veg_temp_reduced_t_log, veg_temp_reduced_s_t_log, veg_temp_reduced_interaction_log, veg_temp_reduced_null_log, veg_temp_reduced_s_log_nested)
+AICc(veg_temp_reduced_simple_log, veg_temp_reduced_s_log, veg_temp_reduced_t_log, veg_temp_reduced_s_t_log, veg_temp_reduced_interaction_log, veg_temp_reduced_null_log, veg_temp_reduced_s_log_nested)
+
+r.squaredGLMM(veg_temp_reduced_s_log)
+
+# checking assumptions
+summary(veg_temp_reduced_simple_log) # not significant overall (but signi for E), adj-R2 = 0.161
+plot(veg_temp_reduced_simple_log)
+veg_temp_reduced_resid <- resid(veg_temp_reduced_simple_log)
+shapiro.test(veg_temp_reduced_resid) # normally distributed
+bartlett.test(Cover_log2 ~ Mean_temp + Region, data = reduced_data)
+
 
 
 
