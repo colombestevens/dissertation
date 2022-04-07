@@ -465,8 +465,9 @@ veg_reduced_interaction <- lm(Percentage_cover ~ Year * Region, data = reduced_d
 veg_reduced_null <- lm(Percentage_cover ~ 1, data = reduced_data)
 veg_reduced_null_s <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduced_data)
 veg_reduced_null_t <- lmer(Percentage_cover ~ 1 + (1|Year), data = reduced_data)
+veg_reduced_null_s_t <- lmer(Percentage_cover ~ 1 + (1|Year) + (1|Site), data = reduced_data)
 
-AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null, veg_reduced_null_s, veg_reduced_null_t)
+AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null, veg_reduced_null_s, veg_reduced_null_t, veg_reduced_null_s_t)
 
 r.squaredGLMM(veg_reduced_s_interaction)
 r.squaredGLMM(veg_reduced_t_interaction)
@@ -487,12 +488,19 @@ qqnorm(veg_reduced_t_interaction_resid)
 qqline(veg_reduced_t_interaction_resid)
 plot(veg_reduced_t_interaction)
 
-# checking assumptions: Site + Year as random effects
+# checking assumptions: Site + Year as random effects w/ interaction
 veg_reduced_s_t_interaction_resid <- resid(veg_reduced_s_t_interaction)
 shapiro.test(veg_reduced_s_t_interaction_resid) # NORMALLY DISTRIBUTED
 qqnorm(veg_reduced_s_t_interaction_resid)
 qqline(veg_reduced_s_t_interaction_resid)
 plot(veg_reduced_s_t_interaction)
+
+# checking assumptions: Site + Year as random effects w/o interaction
+veg_reduced_s_t_resid <- resid(veg_reduced_s_t)
+shapiro.test(veg_reduced_s_t_resid) # NORMALLY DISTRIBUTED
+qqnorm(veg_reduced_s_t_resid)
+qqline(veg_reduced_s_t_resid)
+plot(veg_reduced_s_t)
 
 # Linear mixed model: log data
 veg_reduced_simple_log <- lm(Cover_log2 ~ Year + Region, data = reduced_data)
@@ -533,17 +541,19 @@ veg_temp_reduced_s_t_interaction <- lmer(Percentage_cover ~ Mean_temp * Region +
 summary(veg_temp_reduced_s_t_interaction)
 veg_temp_reduced_interaction <- lm(Percentage_cover ~ Mean_temp * Region, data = reduced_data)
 veg_temp_reduced_null_lm <- lm(Percentage_cover ~ 1, data = reduced_data)
-veg_temp_reduced_null_lmer <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduced_data)
+veg_temp_reduced_null_s <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduced_data)
+veg_temp_reduced_null_t <- lmer(Percentage_cover ~ 1 + (1|Year), data = reduced_data)
+veg_temp_reduced_null_s_t <- lmer(Percentage_cover ~ 1 + (1|Site) + (1|Year), data = reduced_data)
 
-AIC(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
-AICc(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
+AIC(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_s, veg_temp_reduced_null_t, veg_temp_reduced_null_s_t, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
+AICc(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_s, veg_temp_reduced_null_t, veg_temp_reduced_null_s_t, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
 
 # interaction allows for Regions to differ in how percentage cover changes in response to temperature
 
 # R2m and R2c
 r.squaredGLMM(veg_temp_reduced_s_interaction) # R2m = 0.196; R2C = 0.466
 r.squaredGLMM(veg_temp_reduced_t_interaction) # R2m = 0.249; R2c = 0.327
-r.squaredGLMM(veg_temp_reduced_s_t_interaction)
+r.squaredGLMM(veg_temp_reduced_s_t_interaction) # R2m = 0.196; R2c = 0.466
 
 # Residual variance explained by random effect
 106/(106+209) # Site explains 33.65% of residual variance
