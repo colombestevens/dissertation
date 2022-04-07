@@ -450,22 +450,28 @@ hist(reduced_data$Cover_log2)
 veg_reduced_simple <- lm(Percentage_cover ~ Year + Region, data = reduced_data)
 summary(veg_reduced_simple)
 veg_reduced_s <- lmer(Percentage_cover ~ Year + Region + (1|Site), data = reduced_data)
-summary(veg_reduced_s)
+summary(veg_reduced_s) # Site explains tiny % (0.00000...1%) of residual variance
 veg_reduced_s_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Site), data = reduced_data)
 summary(veg_reduced_s_interaction)
 veg_reduced_s_nested <- lmer(Percentage_cover ~ Year + Region + (1|Region/Site), data = reduced_data)
 veg_reduced_t <- lmer(Percentage_cover ~ Year + Region + (1|Year), data = reduced_data)
 veg_reduced_t_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Year), data = reduced_data)
-summary(veg_reduced_t_interaction)
+summary(veg_reduced_t_interaction) # Year accounts for 14.66% of residual variance
 veg_reduced_s_t <- lmer(Percentage_cover ~ Year + Region + (1|Year) + (1|Site), data = reduced_data)
+summary(veg_reduced_s_t) # Site accounts for 0% of residual variance, Year for 12.60%
 veg_reduced_s_t_interaction <- lmer(Percentage_cover ~ Year * Region + (1|Year) + (1|Site), data = reduced_data)
+summary(veg_reduced_s_t_interaction) # Site accounts for 0% of residuel variance, Year for 14.66%
 veg_reduced_interaction <- lm(Percentage_cover ~ Year * Region, data = reduced_data)
 veg_reduced_null <- lm(Percentage_cover ~ 1, data = reduced_data)
+veg_reduced_null_s <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduced_data)
+veg_reduced_null_t <- lmer(Percentage_cover ~ 1 + (1|Year), data = reduced_data)
 
-AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null)
+AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null, veg_reduced_null_s, veg_reduced_null_t)
 
 r.squaredGLMM(veg_reduced_s_interaction)
 r.squaredGLMM(veg_reduced_t_interaction)
+r.squaredGLMM(veg_reduced_s_t_interaction) # R2m = 0.367; R2c = 0.460
+r.squaredGLMM(veg_reduced_s_t) # R2m = 0.345; R2c = 0.427
 
 # checking assumptions: Site as random effect
 veg_reduced_s_interaction_resid <- resid(veg_reduced_s_interaction)
@@ -532,9 +538,18 @@ veg_temp_reduced_null_lmer <- lmer(Percentage_cover ~ 1 + (1|Site), data = reduc
 AIC(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
 AICc(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_lmer, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
 
-r.squaredGLMM(veg_temp_reduced_s_interaction)
-r.squaredGLMM(veg_temp_reduced_t_interaction)
+# interaction allows for Regions to differ in how percentage cover changes in response to temperature
+
+# R2m and R2c
+r.squaredGLMM(veg_temp_reduced_s_interaction) # R2m = 0.196; R2C = 0.466
+r.squaredGLMM(veg_temp_reduced_t_interaction) # R2m = 0.249; R2c = 0.327
 r.squaredGLMM(veg_temp_reduced_s_t_interaction)
+
+# Residual variance explained by random effect
+106/(106+209) # Site explains 33.65% of residual variance
+27.46/(27.46+235.91) # Year explains 10.43% of residual variance
+2.369e-07/(2.369e-07+1.060e+02+2.095e+02) # with T + S, Year explains a tiny % of residual variance
+1.060e+02/(2.369e-07+1.060e+02+2.095e+02) # with T + S, Site explains 33.60% of residual variance
 
 # checking assumptions: Site as random effect
 veg_temp_reduced_s_interaction_resid <- resid(veg_temp_reduced_s_interaction)
