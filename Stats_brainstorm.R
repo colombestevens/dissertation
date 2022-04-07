@@ -474,6 +474,17 @@ r.squaredGLMM(veg_reduced_t_interaction)
 r.squaredGLMM(veg_reduced_s_t_interaction) # R2m = 0.367; R2c = 0.460
 r.squaredGLMM(veg_reduced_s_t) # R2m = 0.345; R2c = 0.427
 
+# stargazer
+stargazer(veg_reduced_s_t_interaction, type = "text",
+          digits = 3,
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          digit.separator = "")
+
+stargazer(veg_reduced_s_t, type = "text",
+          digits = 3,
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          digit.separator = "")
+
 # checking assumptions: Site as random effect
 veg_reduced_s_interaction_resid <- resid(veg_reduced_s_interaction)
 shapiro.test(veg_reduced_s_interaction_resid) # NORMALLY DISTRIBUTED
