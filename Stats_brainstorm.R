@@ -299,7 +299,7 @@ points(scaled_data$Year, fitted(veg_glm_proport_s))
 # Plotting data ----
 # LOOK INTO ggeffects
 # plotting data per site
-(veg_scatter <- ggplot(data, aes(x = Year, y = Cover_log2)) +
+(veg_scatter <- ggplot(data, aes(x = Year, y = Percentage_cover)) +
    geom_point() +
    geom_smooth(method = "lm") +
    facet_wrap(~Site, scales = "free_y") +

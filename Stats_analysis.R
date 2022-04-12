@@ -9,6 +9,7 @@ library(lme4)
 library(lmerTest)
 library(MuMIn)
 library(ggeffects)
+library(wesanderson)
 
 # Importing data ----
 data <- read.csv("Tidy_summer_data.csv")
@@ -65,9 +66,20 @@ veg_time_preds <- ggpredict(veg_reduced_s_t, terms = c("Year", "Region"))
 
 (veg_time_scatter <- ggplot(reduced_data, aes(x = Year, y = Percentage_cover, colour = Region)) +
     geom_point() +
-    geom_smooth(method = "lm") +
+    geom_smooth(method = "lm", aes(fill = Region)) +
+    scale_colour_manual(values = wes_palette("Cavalcanti1")) +
+    scale_fill_manual(values = wes_palette("Cavalcanti1")) +
+    labs(x = "\nTime (years)",
+         y = "Vegetation cover (% cover)\n") +
     theme_bw() +
-    theme(panel.grid = element_blank()))
+    theme(panel.grid = element_blank(),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 12),
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)))
+
+ggsave(veg_time_scatter, filename = "veg_time_scatter.png") # saving plot
 
 # RQ2: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
 
@@ -97,6 +109,7 @@ r.squaredGLMM(veg_temp_reduced_s_t) # R2m = 0.202; R2c = 0.489
 # Year explains 0% of residual variance
 110.8/(110.8+196.8) # Site explains 36.02% of residual variance
 
+
 # checking assumptions: Site + Year as random effects
 veg_temp_reduced_s_t_interaction_resid <- resid(veg_temp_reduced_s_t_interaction)
 shapiro.test(veg_temp_reduced_s_t_interaction_resid) # NORMALLY DISTRIBUTED
@@ -118,9 +131,19 @@ veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region
 
 (veg_temp_scatter <-ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Region)) +
     geom_point() +
-    geom_smooth(method = "lm") +
+    geom_smooth(method = "lm", aes(fill = Region)) +
+    scale_colour_manual(values = wes_palette("Cavalcanti1")) +
+    scale_fill_manual(values = wes_palette("Cavalcanti1")) +
+    labs(x = "\nMean temperature (°C)",
+         y = "Vegetation cover (% cover)\n") +
     theme_bw() +
-    theme(panel.grid = element_blank()))
+    theme(panel.grid = element_blank(),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 12)))
+
+ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
 
 # TEMPERATURE CHANGE OVER TIME ----
 
@@ -130,7 +153,7 @@ all_data <- all_data %>%
   select(-Percentage_cover) %>% 
   na.omit()
 
-# Linear model
+# Linear model: temperature over time
 temp_time_all <- lm(Mean_temp ~ Year + Region, data = all_data)
 summary(temp_time_all)
 
@@ -142,7 +165,17 @@ plot(temp_time_all)
 # Plotting data
 (temp_time_scatter <- ggplot(all_data, aes(x = Year, y = Mean_temp, colour = Region)) +
     geom_point() +
-    geom_smooth(method = "lm") +
+    geom_smooth(method = "lm", aes(fill = Region)) +
+    scale_colour_manual(values = wes_palette("Cavalcanti1")) +
+    scale_fill_manual(values = wes_palette(("Cavalcanti1"))) +
+    labs(x = "\nTime (years)",
+         y = "Mean summer temperature (°C)") +
     theme_bw() +
-    theme(panel.grid = element_blank()))
+    theme(panel.grid = element_blank(),
+          axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12),
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 12)))
 
+ggsave(temp_time_scatter, filename = "temp_time_scatter.png")
