@@ -10,6 +10,7 @@ library(lmerTest)
 library(MuMIn)
 library(ggeffects)
 library(wesanderson)
+library(viridis)
 
 # Importing data ----
 data <- read.csv("Tidy_summer_data.csv")
@@ -121,6 +122,8 @@ plot(veg_temp_reduced_s_t_interaction)
 veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region"))
 
 # Plotting data
+
+# Per region
 (veg_temp_preds_scatter <- ggplot(veg_temp_preds) +
     geom_line(aes(x = x, y = predicted)) +
     geom_ribbon(aes(x = x, ymin = predicted - std.error, ymax = predicted + std.error), 
@@ -144,6 +147,27 @@ veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region
           legend.title = element_text(size = 12)))
 
 ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
+
+# Per site
+# BEAUTIFY SITE NAMES
+(veg_temp_scatter_sites <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Site)) +
+  geom_point() +
+  geom_smooth(method = "lm", aes(fill = Site)) +
+  facet_wrap(~Site, scales = "free_y") +
+  #scale_colour_manual(values = wes_palette("Cavalcanti1")) +
+  #scale_fill_manual(values = wes_palette("Cavalcanti1")) +
+  scale_colour_viridis(discrete = TRUE) +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(x = "\nMean temperature (°C)",
+       y = "Vegetation cover (% cover)\n") +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12)))
+
+ggsave(veg_temp_scatter_sites, filename = "veg_temp_scatter_sites.png") # saving plot
 
 # TEMPERATURE CHANGE OVER TIME ----
 
