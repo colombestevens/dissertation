@@ -149,15 +149,16 @@ veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region
 ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
 
 # Per site
-# BEAUTIFY SITE NAMES
 (veg_temp_scatter_sites <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Site)) +
   geom_point() +
   geom_smooth(method = "lm", aes(fill = Site)) +
   facet_wrap(~Site, scales = "free_y") +
   #scale_colour_manual(values = wes_palette("Cavalcanti1")) +
   #scale_fill_manual(values = wes_palette("Cavalcanti1")) +
-  scale_colour_viridis(discrete = TRUE) +
-  scale_fill_viridis(discrete = TRUE) +
+  #scale_colour_viridis(discrete = TRUE) +
+  #scale_fill_viridis(discrete = TRUE) +
+  scale_colour_manual(values = c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")) +
+  scale_fill_manual(values = c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")) +
   labs(x = "\nMean temperature (°C)",
        y = "Vegetation cover (% cover)\n") +
   theme_bw() +
@@ -165,9 +166,15 @@ ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
         axis.title = element_text(size = 14),
         axis.text = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12)))
+        legend.title = element_text(size = 12),
+        strip.background = element_rect(colour = "#00688B", fill = "white"),
+        strip.text = element_text(size = 11, face = "italic", colour = "#00688B"),
+        legend.position = "none"))
 
 ggsave(veg_temp_scatter_sites, filename = "veg_temp_scatter_sites.png") # saving plot
+
+c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")
+c("#104E8B", "#00688B", "#9AC0CD", "#9FB6CD")
 
 # TEMPERATURE CHANGE OVER TIME ----
 
