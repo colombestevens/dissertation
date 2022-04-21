@@ -421,6 +421,19 @@ AICc(veg_temp_glm_proport_simple, veg_temp_glm_proport_interaction, veg_temp_glm
 
 reduced_data <- filter(data, Percentage_cover != 0.00)
 
+reduced_data <- data %>% 
+   mutate(scaled_cover = scale(data$Percentage_cover, center = TRUE, scale = TRUE),
+          scaled_log = scale(data$Cover_log2, center = TRUE, scale = TRUE)) %>% 
+   filter(Percentage_cover != 0.00)
+
+reduced_west <- filter(data_west, Percentage_cover != 0.00)
+reduced_east <- filter(data_east, Percentage_cover != 0.00)
+
+reduced_east <- data_east %>% 
+   mutate(scaled_cover = scale(data_east$Percentage_cover, center = TRUE, scale = TRUE),
+          scaled_log = scale(data_east$Cover_log2, center = TRUE, scale = TRUE)) %>% 
+   filter(Percentage_cover != 0.00)
+
 ## TEMPERATURE OVER TIME - ALL DATA
 
 all_data <- read.csv("Tidy_summer_data.csv")
@@ -533,6 +546,17 @@ shapiro.test(veg_reduced_simple_resid) # normally distributed
 bartlett.test(Cover_log2 ~ Year + Region, data = reduced_data) # doesn't work...
 # do I just use AICcs to compare including a random effect? and if not then i just do an ancova and that's all?
 
+# Regional trends
+# West
+veg_time_w <- lm(Percentage_cover ~ Year, data = reduced_west)
+summary(veg_time_w)
+plot(veg_time_w)
+
+# East
+veg_time_e <- lm(Percentage_cover ~ Year, data = reduced_east)
+summary(veg_time_e)
+plot(veg_time_e)
+
 ## RQ2: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
 
 # LINEAR MIXED MODEL: non-transformed data
@@ -615,6 +639,17 @@ plot(veg_temp_reduced_simple_log)
 veg_temp_reduced_resid <- resid(veg_temp_reduced_simple_log)
 shapiro.test(veg_temp_reduced_resid) # normally distributed
 bartlett.test(Cover_log2 ~ Mean_temp + Region, data = reduced_data)
+
+# Regional trends
+# West
+veg_temp_w <- lm(Percentage_cover ~ Mean_temp, data = reduced_west)
+summary(veg_temp_w)
+plot(veg_temp_w)
+
+# East
+veg_temp_e <- lm(Percentage_cover ~ Mean_temp, data = reduced_east)
+summary(veg_temp_e)
+plot(veg_temp_e)
 
 
 

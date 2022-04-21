@@ -19,6 +19,9 @@ data <- read.csv("Tidy_summer_data.csv")
 reduced_data <- na.omit(data) %>% 
   filter(Percentage_cover != 0.00)
 
+reduced_west <- filter(reduced_data, Region == "West")
+reduced_east <- filter(reduced_data, Region == "East")
+
 # RQ1: VEGETATION COVER CHANGE OVER TIME ----
 
 # Model comparison
@@ -52,6 +55,17 @@ shapiro.test(veg_reduced_s_t_resid) # NORMALLY DISTRIBUTED
 qqnorm(veg_reduced_s_t_resid)
 qqline(veg_reduced_s_t_resid)
 plot(veg_reduced_s_t)
+
+# Regional trends
+# West
+veg_time_w <- lm(Percentage_cover ~ Year, data = reduced_west)
+summary(veg_time_w)
+plot(veg_time_w)
+
+# East
+veg_time_e <- lm(Percentage_cover ~ Year, data = reduced_east)
+summary(veg_time_e)
+plot(veg_time_e)
 
 # Extracting predictions
 veg_time_preds <- ggpredict(veg_reduced_s_t, terms = c("Year", "Region"))
@@ -110,13 +124,23 @@ r.squaredGLMM(veg_temp_reduced_s_t) # R2m = 0.202; R2c = 0.489
 # Year explains 0% of residual variance
 110.8/(110.8+196.8) # Site explains 36.02% of residual variance
 
-
 # checking assumptions: Site + Year as random effects
 veg_temp_reduced_s_t_interaction_resid <- resid(veg_temp_reduced_s_t_interaction)
 shapiro.test(veg_temp_reduced_s_t_interaction_resid) # NORMALLY DISTRIBUTED
 qqnorm(veg_temp_reduced_s_t_interaction_resid)
 qqline(veg_temp_reduced_s_t_interaction_resid)
 plot(veg_temp_reduced_s_t_interaction)
+
+# Regional trends
+# West
+veg_temp_w <- lm(Percentage_cover ~ Mean_temp, data = reduced_west)
+summary(veg_temp_w)
+plot(veg_temp_w)
+
+# East
+veg_temp_e <- lm(Percentage_cover ~ Mean_temp, data = reduced_east)
+summary(veg_temp_e)
+plot(veg_temp_e)
 
 # Extracting predictions
 veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region"))
@@ -148,7 +172,7 @@ veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region
 
 ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
 
-# Per site
+# Per site ## CHECK OUT HELP FOR 6 WES COLOURS
 (veg_temp_scatter_sites <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Site)) +
   geom_point() +
   geom_smooth(method = "lm", aes(fill = Site)) +
@@ -175,6 +199,10 @@ ggsave(veg_temp_scatter_sites, filename = "veg_temp_scatter_sites.png") # saving
 
 c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")
 c("#104E8B", "#00688B", "#9AC0CD", "#9FB6CD")
+c("#698B69", "#8FBC8F", "#9BCD9B", "#B4EEB4", "#C1FFC1")
+c("#8B3626", "#A52A2A", "#CD3333", "#8B3A3A")
+c("#CDAD00", "#EEC900", "#FFD700")
+
 
 # TEMPERATURE CHANGE OVER TIME ----
 
