@@ -111,13 +111,7 @@ summary(east_temp) # not significant, adj-R2 = -0.052
 Mean_t_ancova <- lm(Mean_temp ~ Year + Region, data = t_mean)
 summary(Mean_t_ancova) # significant (overall + West), adj-R2 = 0.7707
 
-
-# RQ1: HOW DOES VEGETATION COVER DIFFER BETWEEN THE 2 REGIONS? ----
-# could average out present vegetaion cover in each region do box plot??
-# cancelling this RQ
-
-
-# RQ2: VEGETATION COVER CHANGE OVER TIME ----
+# RQ1: VEGETATION COVER CHANGE OVER TIME ----
 # Data distribution ----
 (veg_hist <- ggplot(data, aes(x = Percentage_cover)) +
    geom_histogram(binwidth = 10) )
@@ -155,10 +149,10 @@ veg_mixed_random <- lmer(Cover_log2 ~ Year*Region + (Region|Site), data = data, 
 AIC(veg_mixed, veg_mixed_interaction, veg_mixed_null, veg_mixed_simple, veg_mixed_crossed, veg_mixed_random)
 AICc(veg_mixed, veg_mixed_interaction, veg_mixed_null, veg_mixed_simple, veg_mixed_crossed, veg_mixed_random)
 
-# should use intercation as there's barely any difference between null and no interaction
+# should use interaction as there's barely any difference between null and no interaction
 # AIC of random slope model is way higher than all the others when using interaction
 # HOWEVER, AIC of random slope is the lowest when only using Region
-# AIC and AICc of intercation & random effect is lower than of interaction w/o random effect and of interaction w/ nested
+# AIC and AICc of interaction & random effect is lower than of interaction w/o random effect and of interaction w/ nested
 
 # Model comparison: scaled-data
 veg_scaled_null_s <- lmer(scaled_cover ~ 1 + (1|Site), data = scaled_data, REML = FALSE)
@@ -322,7 +316,7 @@ points(scaled_data$Year, fitted(veg_glm_proport_s))
       theme_bw() +
       theme(panel.grid = (element_blank())))
 
-# RQ3: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
+# RQ2: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
 
 # Model brainstorm ---- 
 
@@ -402,7 +396,6 @@ veg_temp_glm_proport_s_interaction <- glmer(proportion_cover ~ Mean_temp * Regio
 veg_temp_glm_proport_t <- glmer(proportion_cover ~ Mean_temp + Region + (1|Year), data = scaled_data, family = binomial)
 veg_temp_glm_proport_t_s <- glmer(proportion_cover ~ Mean_temp + Region + (1|Year) + (1|Site), data = scaled_data, family = binomial)
 veg_temp_glm_proport_t_s_interaction <- glmer(proportion_cover ~ Mean_temp * Region + (1|Year) + (1|Site), data = scaled_data, family = binomial)
-
 
 AIC(veg_temp_glm_proport_simple, veg_temp_glm_proport_interaction, veg_temp_glm_proport_null, veg_temp_glm_proport_s, veg_temp_glm_proport_t, veg_temp_glm_proport_t_s, veg_temp_glm_proport_t_s_interaction)
 AICc(veg_temp_glm_proport_simple, veg_temp_glm_proport_interaction, veg_temp_glm_proport_null, veg_temp_glm_proport_s, veg_temp_glm_proport_t, veg_temp_glm_proport_t_s, veg_temp_glm_proport_t_s_interaction, veg_temp_glm_proport_s_random)

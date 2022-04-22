@@ -10,7 +10,6 @@ library(lmerTest)
 library(MuMIn)
 library(ggeffects)
 library(wesanderson)
-library(viridis)
 
 # Importing data ----
 data <- read.csv("Tidy_summer_data.csv")
@@ -41,7 +40,7 @@ veg_reduced_null_s_t <- lmer(Percentage_cover ~ 1 + (1|Year) + (1|Site), data = 
 
 AICc(veg_reduced_simple, veg_reduced_s, veg_reduced_s_interaction, veg_reduced_s_nested, veg_reduced_t, veg_reduced_t_interaction, veg_reduced_s_t, veg_reduced_s_t_interaction, veg_reduced_interaction, veg_reduced_null, veg_reduced_null_s, veg_reduced_null_t, veg_reduced_null_s_t)
 
-summary(veg_reduced_s_t)
+summary(veg_reduced_s_t) # model output
 
 # R2m and R2c
 r.squaredGLMM(veg_reduced_s_t) # R2m = 0.345; R2c = 0.427
@@ -59,25 +58,15 @@ plot(veg_reduced_s_t)
 # Regional trends
 # West
 veg_time_w <- lm(Percentage_cover ~ Year, data = reduced_west)
-summary(veg_time_w)
+summary(veg_time_w) # model output
 plot(veg_time_w)
 
 # East
 veg_time_e <- lm(Percentage_cover ~ Year, data = reduced_east)
-summary(veg_time_e)
+summary(veg_time_e) # model output
 plot(veg_time_e)
 
-# Extracting predictions
-veg_time_preds <- ggpredict(veg_reduced_s_t, terms = c("Year", "Region"))
-
 # Plotting data
-(veg_time_preds_scatter <- ggplot(veg_time_preds) +
-    geom_line(aes(x = x, y = predicted)) +
-    geom_ribbon(aes(x = x, ymin = predicted - std.error, ymax = predicted + std.error), 
-                fill = "lightgrey", alpha = 0.5) +
-    geom_point(reduced_data, mapping = aes(x = Year, y = Percentage_cover, colour = Region)) +
-    theme_bw() +
-    theme(panel.grid = element_blank()))
 
 (veg_time_scatter <- ggplot(reduced_data, aes(x = Year, y = Percentage_cover, colour = Region)) +
     geom_point() +
@@ -115,7 +104,7 @@ veg_temp_reduced_null_s_t <- lmer(Percentage_cover ~ 1 + (1|Site) + (1|Year), da
 
 AICc(veg_temp_reduced_simple, veg_temp_reduced_s, veg_temp_reduced_t, veg_temp_reduced_s_t, veg_temp_reduced_interaction, veg_temp_reduced_null_lm, veg_temp_reduced_null_s, veg_temp_reduced_null_t, veg_temp_reduced_null_s_t, veg_temp_reduced_s_nested, veg_temp_reduced_s_interaction, veg_temp_reduced_t_interaction, veg_temp_reduced_s_t_interaction)
 
-summary(veg_temp_reduced_s_t)
+summary(veg_temp_reduced_s_t) # model output
 
 # R2m and R2c
 r.squaredGLMM(veg_temp_reduced_s_t) # R2m = 0.202; R2c = 0.489
@@ -134,28 +123,17 @@ plot(veg_temp_reduced_s_t_interaction)
 # Regional trends
 # West
 veg_temp_w <- lm(Percentage_cover ~ Mean_temp, data = reduced_west)
-summary(veg_temp_w)
+summary(veg_temp_w) # model output
 plot(veg_temp_w)
 
 # East
 veg_temp_e <- lm(Percentage_cover ~ Mean_temp, data = reduced_east)
-summary(veg_temp_e)
+summary(veg_temp_e) # model output
 plot(veg_temp_e)
-
-# Extracting predictions
-veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region"))
 
 # Plotting data
 
 # Per region
-(veg_temp_preds_scatter <- ggplot(veg_temp_preds) +
-    geom_line(aes(x = x, y = predicted)) +
-    geom_ribbon(aes(x = x, ymin = predicted - std.error, ymax = predicted + std.error), 
-                fill = "lightgrey", alpha = 0.5) +
-    geom_point(reduced_data, mapping = aes(x = Mean_temp, y = Percentage_cover, colour = Region)) +
-    theme_bw() +
-    theme(panel.grid = element_blank()))
-
 (veg_temp_scatter <-ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Region)) +
     geom_point() +
     geom_smooth(method = "lm", aes(fill = Region)) +
@@ -172,15 +150,11 @@ veg_temp_preds <- ggpredict(veg_temp_reduced_s_t, terms = c("Mean_temp", "Region
 
 ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
 
-# Per site ## CHECK OUT HELP FOR 6 WES COLOURS
+# Per site
 (veg_temp_scatter_sites <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Site)) +
   geom_point() +
   geom_smooth(method = "lm", aes(fill = Site)) +
   facet_wrap(~Site, scales = "free_y") +
-  #scale_colour_manual(values = wes_palette("Cavalcanti1")) +
-  #scale_fill_manual(values = wes_palette("Cavalcanti1")) +
-  #scale_colour_viridis(discrete = TRUE) +
-  #scale_fill_viridis(discrete = TRUE) +
   scale_colour_manual(values = c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")) +
   scale_fill_manual(values = c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")) +
   labs(x = "\nMean temperature (°C)",
@@ -197,13 +171,6 @@ ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
 
 ggsave(veg_temp_scatter_sites, filename = "veg_temp_scatter_sites.png") # saving plot
 
-c("#556B2F", "#EEC900", "#9BCD9B", "#8B2323", "#CDC673", "#9AC0CD")
-c("#104E8B", "#00688B", "#9AC0CD", "#9FB6CD")
-c("#698B69", "#8FBC8F", "#9BCD9B", "#B4EEB4", "#C1FFC1")
-c("#8B3626", "#A52A2A", "#CD3333", "#8B3A3A")
-c("#CDAD00", "#EEC900", "#FFD700")
-
-
 # TEMPERATURE CHANGE OVER TIME ----
 
 # Transforming data to have all temperature values
@@ -214,7 +181,7 @@ all_data <- all_data %>%
 
 # Linear model: temperature over time
 temp_time_all <- lm(Mean_temp ~ Year + Region, data = all_data)
-summary(temp_time_all)
+summary(temp_time_all) # model output
 
 # Checking model assumptions
 temp_time_all_resid <- resid(temp_time_all)
