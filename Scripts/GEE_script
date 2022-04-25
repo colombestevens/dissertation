@@ -1,0 +1,455 @@
+# JavaScript script used to extract vegetation cover data in the Google Earth Engine
+# author: Colombe Stevens
+# adapted from a script by Dr Andrew Gray, with permission
+# 02.11.2021
+
+// Imports
+var S2L2 = ee.ImageCollection("COPERNICUS/S2_SR"),
+    capeHallet = 
+    /* color: #ffffff */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[170.22510498247578, -72.31869754226544],
+          [170.22510498247578, -72.32281592964189],
+          [170.23849456987813, -72.32281592964189],
+          [170.23849456987813, -72.31869754226544]]], null, false),
+    AnchorageIsl = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-68.2422431065224, -67.61485101552213],
+          [-68.20413449261031, -67.6202110388103],
+          [-68.16276433047499, -67.59699728271134],
+          [-68.19864135905395, -67.58927610460721]]]),
+    KingGeorgeIsl = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.460089916076576, -61.863946345675835],
+          [-59.138251537170326, -61.861355841985024],
+          [-59.140998119201576, -62.264113164566716],
+          [-57.468329662170326, -62.26027817138555]]]),
+    LivingstonIsl = /* color: #d63000 */ee.Geometry.Polygon(
+        [[[-59.750739330139076, -62.76225689465663],
+          [-59.805670970764076, -62.42597662936574],
+          [-61.338263744201576, -62.47678850455067],
+          [-61.283332103576576, -62.81124173495938]]]),
+    CaseyStation = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[110.48759431165828, -66.29415913697267],
+          [110.55025071424618, -66.29429716645828],
+          [110.5519673280157, -66.27627791826521],
+          [110.48931092542782, -66.27538007049847]]]),
+    BotanyBay = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[161.84014620116128, -76.93678208573627],
+          [162.6917008926545, -77.18321119011313],
+          [163.65046992853797, -76.92709659214215],
+          [163.65084662774885, -76.7219597757008],
+          [161.77545140966683, -76.71457707983242]]]),
+    MarioZucchelliBase = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[161.88012917322536, -75.07619340747247],
+          [164.70910866541286, -75.08609294452057],
+          [164.67614968103786, -74.59922835833557],
+          [161.82519753260036, -74.56125356792289]]]),
+    MarsOasis = 
+    /* color: #fefffe */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-68.61632380067115, -71.46173221457354],
+          [-68.61632380067115, -71.60961128745804],
+          [-68.07112726746803, -71.60961128745804],
+          [-68.07112726746803, -71.46173221457354]]], null, false),
+    L8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2"),
+    L82 = ee.ImageCollection("LANDSAT/LC08/C01/T2_TOA"),
+    L7 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2"),
+    L72 = ee.ImageCollection("LANDSAT/LE07/C01/T2_TOA"),
+    L5 = ee.ImageCollection("LANDSAT/LT05/C02/T1_L2"),
+    L52 = ee.ImageCollection("LANDSAT/LT05/C01/T2_TOA"),
+    L4 = ee.ImageCollection("LANDSAT/LT04/C02/T1_L2"),
+    L42 = ee.ImageCollection("LANDSAT/LT04/C01/T2_TOA"),
+    CHP1 = 
+    /* color: #00ffff */
+    /* shown: false */
+    ee.Geometry.Point([170.23576509957095, -72.31870662905072]),
+    CHP2 = 
+    /* color: #bf04c2 */
+    /* shown: false */
+    ee.Geometry.Point([170.23281267616048, -72.31870470293033]),
+    CHP3 = 
+    /* color: #ff0000 */
+    /* shown: false */
+    ee.Geometry.Point([170.2357523772408, -72.31960404996552]),
+    CHPlot = 
+    /* color: #ffffff */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[170.2319543692757, -72.31906640217031],
+          [170.2319543692757, -72.31996573139548],
+          [170.2349047991921, -72.31996573139548],
+          [170.2349047991921, -72.31906640217031]]], null, false),
+    Plot = 
+    /* color: #ffffff */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[170.21179488631978, -72.31855806606286],
+          [170.21179488631978, -72.3194574203182],
+          [170.2147345874001, -72.3194574203182],
+          [170.2147345874001, -72.31855806606286]]], null, false),
+    CaseySt = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([110.52844971937313, -66.28235483369693]),
+    CP1 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Point([110.48278299081926, -66.28148264798452]),
+    CP2 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Point([110.48549738634233, -66.28148264798449]),
+    CP3 = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.Geometry.Point([110.4827722619832, -66.28251837225602]),
+    CPlot = 
+    /* color: #ffffff */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[110.48431944417374, -66.28146046323447],
+          [110.48431944417374, -66.28249618841873],
+          [110.48704456853287, -66.28249618841873],
+          [110.48704456853287, -66.28146046323447]]], null, false),
+    Rita = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([164.04718239588163, -74.74629467246774]),
+    MZBP2 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Point([164.04867646240922, -74.7601369286406]),
+    MZBP3 = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.Geometry.Point([164.04525396370616, -74.76103936252127]),
+    MZBPlot = 
+    /* color: #ffffff */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[164.01562900688648, -74.76771117682287],
+          [164.01562900688648, -74.76861599146606],
+          [164.01906223442555, -74.76861599146606],
+          [164.01906223442555, -74.76771117682287]]], null, false),
+    MZBP1 = 
+    /* color: #bf04c2 */
+    /* shown: false */
+    ee.Geometry.Point([164.04524644738808, -74.76013478453508]),
+    AnchP1 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Point([-68.19560405297328, -67.59512424378326]),
+    AnchP2 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Point([-68.19560405297328, -67.5960279586336]),
+    AnchP3 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Point([-68.19797512574245, -67.59512424378326]),
+    AnchPlot = 
+    /* color: #ffffff */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-68.2039832739358, -67.59718106493223],
+          [-68.2039832739358, -67.59808470109101],
+          [-68.20161220116664, -67.59808470109101],
+          [-68.20161220116664, -67.59718106493223]]], null, false),
+    KGIP1 = 
+    /* color: #00ff00 */
+    /* shown: false */
+    ee.Geometry.Point([-58.943263251206965, -62.2107668037906]),
+    KGIP2 = 
+    /* color: #0000ff */
+    /* shown: false */
+    ee.Geometry.Point([-58.94133645704812, -62.2107720932183]),
+    KGIP3 = 
+    /* color: #999900 */
+    /* shown: false */
+    ee.Geometry.Point([-58.943267647538846, -62.21166743819715]),
+    KGIPlot = 
+    /* color: #ffffff */
+    /* shown: false */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-58.94408303907937, -62.209811693673046],
+          [-58.94408303907937, -62.21071206914161],
+          [-58.94215184858865, -62.21071206914161],
+          [-58.94215184858865, -62.209811693673046]]], null, false),
+    LagoonPlot = 
+    /* color: #f7fff7 */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[-68.23396066582535, -67.59275254690398],
+          [-68.23396066582535, -67.59365635249121],
+          [-68.23158959305619, -67.59365635249121],
+          [-68.23158959305619, -67.59275254690398]]], null, false),
+    LagP1 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Point([-68.23350954686168, -67.59263313337827]),
+    LagP2 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Point([-68.23113847409252, -67.59263313337827]),
+    LagP3 = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.Geometry.Point([-68.23350954686168, -67.59353694353405]),
+    BBP1 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.Geometry.Point([162.6482906453707, -77.00555805147859]),
+    BBP2 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.Geometry.Point([162.65228177238487, -77.00555322657998]),
+    BBP3 = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.Geometry.Point([162.64831210304283, -77.00646027657648]),
+    BBPlot = 
+    /* color: #ffffff */
+    /* displayProperties: [
+      {
+        "type": "rectangle"
+      }
+    ] */
+    ee.Geometry.Polygon(
+        [[[162.66185189415, -77.01008303110106],
+          [162.66185189415, -77.01098012450588],
+          [162.66584302116416, -77.01098012450588],
+          [162.66584302116416, -77.01008303110106]]], null, false);
+    
+    // Script
+    //summerfilter
+var summer82 =ee.Filter.date('1982-12-01','1983-03-01');
+var summer83 =ee.Filter.date('1983-12-01','1984-03-01');
+var summer84 =ee.Filter.date('1984-12-01','1985-03-01');
+var summer85 =ee.Filter.date('1985-12-01','1986-03-01');
+var summer86 =ee.Filter.date('1986-12-01','1987-03-01');
+var summer87 =ee.Filter.date('1987-12-01','1988-03-01');
+var summer88 =ee.Filter.date('1988-12-01','1989-03-01');
+var summer89 =ee.Filter.date('1989-12-01','1990-03-01');
+var summer90 =ee.Filter.date('1990-12-01','1991-03-01');
+var summer91 =ee.Filter.date('1991-12-01','1992-03-01');
+var summer92 =ee.Filter.date('1992-12-01','1993-03-01');
+var summer93 =ee.Filter.date('1993-12-01','1994-03-01');
+var summer94 =ee.Filter.date('1994-12-01','1995-03-01');
+var summer95 =ee.Filter.date('1995-12-01','1996-03-01');
+var summer96 =ee.Filter.date('1996-12-01','1997-03-01');
+var summer97 =ee.Filter.date('1997-12-01','1998-03-01');
+var summer98 =ee.Filter.date('1998-12-01','1999-03-01');
+var summer99 =ee.Filter.date('1999-12-01','2000-03-01');
+var summer00 =ee.Filter.date('2000-12-01','2001-03-01');
+var summer01 =ee.Filter.date('2001-12-01','2002-03-01');
+var summer02 =ee.Filter.date('2002-12-01','2003-03-01');
+var summer03 =ee.Filter.date('2003-12-01','2004-03-01');
+var summer04 =ee.Filter.date('2004-12-01','2005-03-01');
+var summer05 =ee.Filter.date('2005-12-01','2006-03-01');
+var summer06 =ee.Filter.date('2006-12-01','2007-03-01');
+var summer07 =ee.Filter.date('2007-12-01','2008-03-01');
+var summer08 =ee.Filter.date('2008-12-01','2009-03-01');
+var summer09 =ee.Filter.date('2009-12-01','2010-03-01');
+var summer10 =ee.Filter.date('2010-12-01','2011-03-01');
+var summer11 =ee.Filter.date('2011-12-01','2012-03-01');
+var summer12 =ee.Filter.date('2012-12-01','2013-03-01');
+var summer13 =ee.Filter.date('2013-12-01','2014-03-01');
+var summer14 =ee.Filter.date('2014-12-01','2015-03-01');
+var summer15 =ee.Filter.date('2015-12-01','2016-03-01');
+var summer16 =ee.Filter.date('2016-12-01','2017-03-01');
+var summer17 =ee.Filter.date('2017-12-01','2018-03-01');
+var summer18 =ee.Filter.date('2018-12-01','2019-03-01');
+var summer19 =ee.Filter.date('2019-12-01','2020-03-01');
+var summer20 =ee.Filter.date('2020-12-01','2021-03-01');
+var summerAll = ee.Filter.or(summer17, summer18, summer19, summer20); //combined summer filter
+
+
+//pallette
+var ndviparams = {
+  bands: ['vegetation'],
+  min: 0.1,
+  max: 1,
+  palette: ['00FF80', '006734'],
+  };
+
+//S2_L2 Image Search and Filter 
+
+var L8Images = L82.filter(summer20).filterBounds(KGIPlot).filterMetadata('CLOUD_COVER', 'less_than', 20);
+  print ('Filtered Image Count L8: ', L8Images.size());
+
+Map.addLayer(L8Images, {bands: ['B4', 'B3', 'B2']}, 'L8_images');
+
+//NDVI 
+var NDVI_B8_B4 = function(image) {
+  var NDVI = image.normalizedDifference(['B5', 'B4']);
+  return image.addBands(NDVI);
+  };
+var vegetation = L8Images.map(NDVI_B8_B4);
+
+//GRVI
+
+var GRVI_B3_B4 = function(image) {
+var GRVI = image.normalizedDifference(['B3', 'B4']);
+  return image.addBands(GRVI);
+};
+var vegetation2 = vegetation.map(GRVI_B3_B4); // adding GRVI layer to NDVI map
+
+
+//threshold masking 
+
+var thresh = function(image) {
+  var ndviThreshold = image.where((image.select('nd').lt(0.2)).or(image.select('nd_1').lt(-0.1)),0);
+  return image.updateMask(ndviThreshold);
+  };
+var threshmasking = vegetation2.map(thresh);
+
+// ANNUAL GREENEST PIXEL COMPOSITES 
+var greenestPixelComposite = threshmasking.reduce(ee.Reducer.max());
+//Map.addLayer(greenestPixelComposite);
+
+var ndvi = greenestPixelComposite.select('nd_max').rename('vegetation');
+Map.addLayer(ndvi, ndviparams, 'NDVI'); // this is what actually makes the green pixels appear
+
+// SETTING PLOTS
+
+//Cape Hallet
+var DistanceCH4 = CHP1.distance({'right': CHP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceCH4(...) =', DistanceCH4);
+
+var DistanceCH5 = CHP1.distance({'right': CHP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceCH5(...) =', DistanceCH5);
+
+// Casey
+var DistanceC1 = CP1.distance({'right': CP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceC4(...) =', DistanceCH4);
+
+var DistanceC2 = CP1.distance({'right': CP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceC5(...) =', DistanceCH5);
+
+// MZB
+var DistanceMZB1 = MZBP1.distance({'right': MZBP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceMZB1(...) =', DistanceMZB1);
+
+var DistanceMZB2 = MZBP1.distance({'right': MZBP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceMZB2(...) =', DistanceMZB2);
+
+// Anchorage Island
+var DistanceAnch1 = AnchP1.distance({'right': AnchP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceAnch1(...) =', DistanceAnch1);
+
+var DistanceAnch2 = AnchP1.distance({'right': AnchP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceAnch2(...) =', DistanceAnch2);
+
+// Lagoon Island
+var DistanceLag1 = LagP1.distance({'right': LagP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceLag1(...) =', DistanceLag1);
+
+var DistanceLag2 = LagP1.distance({'right': LagP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceLag2(...) =', DistanceLag2);
+
+// King George Island
+var DistanceKGI1 = KGIP1.distance({'right': KGIP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceKGI1(...) =', DistanceKGI1);
+
+var DistanceKGI2 = KGIP1.distance({'right': KGIP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceKGI2(...) =', DistanceKGI2);
+
+// Botany Bay
+var DistanceBB1 = BBP1.distance({'right': BBP2, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceBB1(...) =', DistanceBB1);
+
+var DistanceBB2 = BBP1.distance({'right': BBP3, 'maxError': 1});
+// Print the result to the console.
+print('point.distanceBB2(...) =', DistanceBB2);
+
+
+// Apply the area method to the Polygon object.
+//var CaseyArea = CasPlotArea.area({'maxError': 1});
+// Print the result to the console.
+//print('polygon.areaCas(...) =', CaseyArea);
+
+// EXPORTING DATA
+// Create a 3-band, 8-bit, color-IR composite to export.
+ var visualization = greenestPixelComposite.visualize({
+  bands: ['B5_max', 'B4_max', 'B3_max'],
+  max: 0.4
+});
+
+// Create a task that you can launch from the Tasks tab.
+Export.image.toDrive({
+  image: visualization,
+  description: 'Greenest_pixel_composite',
+  region: KGIPlot,
+  scale: 30
+});
