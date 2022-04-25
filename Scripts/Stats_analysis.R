@@ -11,7 +11,6 @@ library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(MuMIn)
-library(ggeffects)
 library(wesanderson)
 
 # Importing data ----
