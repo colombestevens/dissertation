@@ -1,4 +1,4 @@
-# Temperature wrangling
+# Temperature data wrangling
 # Colombe Stevens
 # 17/02/2022
 
@@ -9,15 +9,12 @@
 library(tidyverse)
 
 # Importing data ----
-MZB_raw <- read.csv("MZB_raw_T_data.csv")
-Liv_raw <- read.csv("Liv_Isl_raw_T_data.csv")
-Casey_raw <- read.csv("Casey_raw_T_data.csv")
-KGI_raw <- read.csv("KGI_raw_T_data.csv")
-Rothera_raw <- read.csv("Rothera_raw_T_data.csv")
-CH_04_10_raw <- read.csv("CH_04_10_raw_T_data.csv")
-CH_11_18_raw <- read.csv("CH_11_18_raw_T_data.csv")
-
-###### CHECK AMOUNT OF NA DATA BEFORE NA.OMIT -- esp MZB 2009, 2010
+MZB_raw <- read.csv("Raw_data/MZB_raw_T_data.csv")
+Casey_raw <- read.csv("Raw_data/Casey_raw_T_data.csv")
+KGI_raw <- read.csv("Raw_data/KGI_raw_T_data.csv")
+Rothera_raw <- read.csv("Raw_data/Rothera_raw_T_data.csv")
+CH_04_10_raw <- read.csv("Raw_data/CH_04_10_raw_T_data.csv")
+CH_11_18_raw <- read.csv("Raw_data/CH_11_18_raw_T_data.csv")
 
 # MZB ----
 # Separating date/time, creating month
@@ -75,12 +72,6 @@ MZB <- MZB_mean %>%
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Monthly_mean))
 
-# LIVINGSTON ISLAND ----
-
-Liv <- Liv_raw %>% 
-  separate(X..., c("Factor", "Output"), sep = " : ", remove = TRUE) 
-Liv <-  mutate_all(str_remove_all(Liv, '""'))
-
 # CASEY ----
 Casey <- Casey_raw %>%
   pivot_longer(c("January":"December"), names_to = "Month", values_to = "Temp") %>%
@@ -88,7 +79,6 @@ Casey <- Casey_raw %>%
   filter(Month %in% c("November", "December")) %>% 
   group_by(Site, Year) %>% 
   summarise(Mean_temp = mean(Temp))
-
 
 # KING GEORGE ISLAND ----
 KGI <- KGI_raw %>%

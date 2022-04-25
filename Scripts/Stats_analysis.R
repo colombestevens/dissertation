@@ -2,6 +2,9 @@
 # Colombe Stevens
 # 02.04.2022
 
+# Aim of script:
+# Performing the final statistical analyses and data visualisation
+
 # Libraries ----
 library(tidyverse)
 library(ggplot2)
@@ -12,7 +15,7 @@ library(ggeffects)
 library(wesanderson)
 
 # Importing data ----
-data <- read.csv("Tidy_summer_data.csv")
+data <- read.csv("Tidy_data/All_data.csv")
 
 # Transforming data ----
 reduced_data <- na.omit(data) %>% 
@@ -83,7 +86,7 @@ plot(veg_time_e)
           legend.title = element_text(size = 12),
           axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)))
 
-ggsave(veg_time_scatter, filename = "veg_time_scatter.png") # saving plot
+ggsave(veg_time_scatter, filename = "Figures/veg_time_scatter.png") # saving plot
 
 # RQ2: VEGETATION COVER CHANGE IN RESPONSE TO TEMPERATURE ----
 
@@ -148,7 +151,7 @@ plot(veg_temp_e)
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12)))
 
-ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
+ggsave(veg_temp_scatter, filename = "Figures/veg_temp_scatter.png") # saving plot
 
 # Per site
 (veg_temp_scatter_sites <- ggplot(data, aes(x = Mean_temp, y = Percentage_cover, colour = Site)) +
@@ -169,12 +172,12 @@ ggsave(veg_temp_scatter, filename = "veg_temp_scatter.png") # saving plot
         strip.text = element_text(size = 11, face = "italic", colour = "#00688B"),
         legend.position = "none"))
 
-ggsave(veg_temp_scatter_sites, filename = "veg_temp_scatter_sites.png") # saving plot
+ggsave(veg_temp_scatter_sites, filename = "Figures/veg_temp_scatter_sites.png") # saving plot
 
 # TEMPERATURE CHANGE OVER TIME ----
 
 # Transforming data to have all temperature values
-all_data <- read.csv("Tidy_summer_data.csv")
+all_data <- read.csv("Tidy_data/All_data.csv")
 all_data <- all_data %>% 
   select(-Percentage_cover) %>% 
   na.omit()
@@ -204,4 +207,4 @@ plot(temp_time_all)
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12)))
 
-ggsave(temp_time_scatter, filename = "temp_time_scatter.png")
+ggsave(temp_time_scatter, filename = "Figures/temp_time_scatter.png")

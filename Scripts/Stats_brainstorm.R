@@ -2,7 +2,8 @@
 # Colombe Stevens
 # 01.03.2022
 
-# Workflow ----
+# Aim of script:
+# Brainstorming different possible statistical analyses
 
 # Library ----
 library(tidyverse)
@@ -13,7 +14,7 @@ library(MuMIn)
 library(corrplot)
 
 # Importing data ----
-data <- read.csv("Tidy_summer_data.csv")
+data <- read.csv("Tidy_data/All_data.csv")
 
 # Transforming data ----
 # logging data
@@ -429,7 +430,7 @@ reduced_east <- data_east %>%
 
 ## TEMPERATURE OVER TIME - ALL DATA
 
-all_data <- read.csv("Tidy_summer_data.csv")
+all_data <- read.csv("Tidy_data/All_data.csv")
 all_data <- all_data %>% 
    select(-Percentage_cover) %>% 
    na.omit()
