@@ -82,8 +82,7 @@ plot(veg_time_e)
           axis.title = element_text(size = 14),
           axis.text = element_text(size = 12),
           legend.text = element_text(size = 12),
-          legend.title = element_text(size = 12),
-          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)))
+          legend.title = element_text(size = 12)))
 
 ggsave(veg_time_scatter, filename = "Figures/veg_time_scatter.png") # saving plot
 
@@ -202,7 +201,6 @@ plot(temp_time_all)
     theme(panel.grid = element_blank(),
           axis.title = element_text(size = 14),
           axis.text = element_text(size = 12),
-          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 12)))
 
