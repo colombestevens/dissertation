@@ -1,6 +1,7 @@
 ## Climate driven vegetation cover change across East and West Antarctica
-### a dissertation by Colombe Stevens and supervised by Dr Claudia Colesie
-#### University of Edinburgh, April 2022
+### a dissertation by Colombe Stevens
+##### Supervisor: Dr Claudia Colesie
+##### University of Edinburgh, April 2022
 
 ### Navigation
 
